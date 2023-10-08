@@ -5,13 +5,23 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from .serializers import CatagorySerilizer,ProductSerilizer,SubCatagorySerilizer,CustomerSerializer,OrderSerilizer,OrderItemSeializer,NewsSerializers
-from .models import Product,Catagory,CustomerProfile,Orders,OrderItems,News,SubCatagory
+from .models import Product,Catagory,CustomerProfile,Orders,OrderItems,News,SubCatagory,ChapaTransaction
 from rest_framework.filters import SearchFilter,OrderingFilter
 from django.db.models import Count
 from mainapp.filters import ProductFilter 
 
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+
+from django_chapa.api import ChapaAPI
+import json
+from rest_framework.decorators import api_view,permission_classes
+import hmac
+import hashlib
+
+
 
 # Create your views here.
 
@@ -115,3 +125,79 @@ class ProfileViewSet(CreateModelMixin,RetrieveModelMixin,UpdateModelMixin,Generi
             serilizer.is_valid(raise_exception=True)
             serilizer.save()
             return Response(serilizer.data)
+# @api_view(['POST'])  
+# @permission_classes([IsAuthenticated])
+# def chapa_payment(request):
+    
+#     order_data = json.loads(request.body)
+#     # print(request.user.id)
+#     # print(order_data)
+
+
+
+#     transaction = ChapaTransaction.objects.create(
+#         amount=1000,
+#         currency="ETB",
+#         email="andi.fab23@gmail.com",
+
+    
+#         description="Payment for your service",
+#         response_dump=order_data
+#     )
+
+ 
+#     chapa_api = ChapaAPI()  
+#     chapa_response = chapa_api.send_request(transaction)
+
+   
+#     return Response(chapa_response)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def chapa_payment(request):
+    order_data = json.loads(request.body)
+
+    # Create an Order object using the OrderSerializer
+    order_serializer = OrderSerilizer(data=order_data,context={'userid':request.user.id})
+    
+    if order_serializer.is_valid():
+        # Save the order
+        order = order_serializer.save()
+        print(order.total,"order")
+        total_as_float = float(order.total)
+
+        chapa_api = ChapaAPI()
+        transaction=ChapaTransaction.objects.create(amount=total_as_float,currency="ETB",description="Payment for order items",id=order.orderuniqueId,email="andi.fab23@gmail.com")
+        print(transaction,"transaction")
+        print(transaction.amount)
+        chapa_response = chapa_api.send_request(transaction)
+        print(chapa_response,"chapa_response")
+
+
+        # Return the response from ChapaAPI
+        return Response(chapa_response)
+    else:
+        # If the input data is not valid, return a response with error details
+        return Response(order_serializer.errors, status=400)
+
+
+
+
+@csrf_exempt
+def my_webhook_view(request):
+    if request.method == "GET":
+      
+        json_data =request.body
+        data = json.loads(json_data.decode('utf-8'))
+        
+        trx_ref = data['trx_ref']
+        print(trx_ref,"trx_ref")
+        order=Orders.objects.get(orderuniqueId=trx_ref)
+        order.status="aproved"
+        order.save()
+       
+        return HttpResponse(status=200)
+        
+       
+
+    # Return a 404 for other request methods or invalid requests
+    return HttpResponse(status=400)

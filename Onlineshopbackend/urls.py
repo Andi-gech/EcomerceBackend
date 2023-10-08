@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from rest_framework_nested import routers
-from mainapp.views import Catagoryviewset,ProfileViewSet,SubCatagoryviewset,allproductViewset,Newsviewset,NewProductViewset,Productviewset,Top_viewset,OrderItemViewset,OrderViewsSet
+from mainapp.views import Catagoryviewset,chapa_payment,my_webhook_view,ProfileViewSet,SubCatagoryviewset,allproductViewset,Newsviewset,NewProductViewset,Productviewset,Top_viewset,OrderItemViewset,OrderViewsSet
 from django.urls import include
 from django.conf import settings
 from django.conf.urls.static import static
@@ -46,6 +46,9 @@ urlpatterns = [
        path(r'',include(subcatagory_router.urls)),
          path('auth/', include('djoser.urls')),
      path('auth/', include('djoser.urls.jwt')),
+      path('chapa/',chapa_payment)
+    ,path('webhook/',my_webhook_view),
+     path('chapa-webhook/', include('django_chapa.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

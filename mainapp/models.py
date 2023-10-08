@@ -1,6 +1,8 @@
 from django.db import models
 import uuid
 from django.contrib.auth.models import User
+from django_chapa.models import ChapaTransactionMixin
+from decimal import Decimal
 
 # Create your models here.
 class CustomerProfile(models.Model):
@@ -33,6 +35,13 @@ class Product(models.Model):
     cattagory=models.ForeignKey(Catagory,on_delete=models.CASCADE)
     def __str__(self):
         return self.name
+class OrderItems(models.Model):
+ 
+    product=models.ForeignKey(Product,on_delete=models.CASCADE)
+    quantity=models.PositiveIntegerField()
+    def __str__(self):
+        return str(self.product)
+    
 class Orders(models.Model):
     status_CHOICES = (
         ('aproved', 'aproved'),
@@ -41,24 +50,38 @@ class Orders(models.Model):
     )
     
     orderuniqueId=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-  
+    
     location=models.CharField(max_length=255)
+    order_items=models.ManyToManyField('orderItems',related_name='order_items',blank=True)
     customer=models.ForeignKey(CustomerProfile,on_delete=models.CASCADE,null=True,blank=True)
     date_created=models.DateTimeField(auto_now_add=True)
     status=models.CharField(max_length=10, choices=status_CHOICES,default="pending")
+    @property
+    def total(self):
+        total = Decimal(0)
+        for order_item in self.order_items.all():
+            total += order_item.quantity * order_item.product.price
+        return total
+
     def __str__(self):
         return str(self.orderuniqueId)
-class OrderItems(models.Model):
-    order=models.ForeignKey(Orders,on_delete=models.CASCADE)
-    product=models.ForeignKey(Product,on_delete=models.CASCADE)
-    quantity=models.PositiveIntegerField()
-    def __str__(self) :
-        return str(self.order.orderuniqueId)
+    
 class News(models.Model):
     Headline=models.CharField(max_length=1000)
     description=models.TextField()
     def __str__(self) :
         return self.Headline
+class ChapaTransaction(ChapaTransactionMixin, models.Model):
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Chapa Transaction'
+        verbose_name_plural = 'Chapa Transactions'
+
+    def __str__(self):
+        return f"Chapa Transaction - ID: {self.id}"
 
 
 
