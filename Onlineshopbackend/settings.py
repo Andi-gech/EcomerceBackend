@@ -44,6 +44,7 @@ INSTALLED_APPS = [
      'rest_framework',
      'django_filters',
     'mainapp',
+        'django_chapa',
 ]
 
 MIDDLEWARE = [
@@ -62,6 +63,14 @@ SIMPLE_JWT = {
    "ACCESS_TOKEN_LIFETIME": timedelta(days=5),
 }
 ROOT_URLCONF = 'Onlineshopbackend.urls'
+CHAPA_SECRET = "CHASECK_TEST-lwMIWTxPB90yGBwBN24G7gzdLZWIGkyR"
+
+CHAPA_API_URL = 'https://api.chapa.co'
+
+CHAPA_API_VERSION = 'v1'
+
+CHAPA_WEBHOOK_URL='https://89f7-196-189-182-1.ngrok-free.app/webhook/'
+CHAPA_TRANSACTION_MODEL = 'mainapp.models.ChapaTransaction'
 
 TEMPLATES = [
     {
