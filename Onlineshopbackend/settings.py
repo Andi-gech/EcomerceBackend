@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-&jway#t-ewk17qlj3o83#vb%zhhs-=ys+r)$riz0t%doe=k^^*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'Onlineshopbackend.wsgi.application'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        
+
     ),
 }
 
@@ -102,9 +102,10 @@ CORS_ALLOWED_ORIGINS = [
     "https://sub.example.com",
     "http://localhost:3000",
     "http://127.0.0.1:9000",
-     "http://192.168.1.9:3000"
+     "http://192.168.1.9:3000",
+     "https://ecomerceapp.pages.dev/"
 
-    
+
 ]
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
